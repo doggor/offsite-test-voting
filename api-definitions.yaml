@@ -1,0 +1,244 @@
+swagger: '2.0'
+info:
+  description: A simple voting system API.
+  version: 1.0.0
+  title: Voting System
+  contact:
+    email: seangle369@yahoo.com.hk
+  license:
+    name: UNLICENSED
+host: 'localhost:8080'
+basePath: /api/v1
+tags:
+  - name: campaigns
+    description: Campaigns for voting
+  - name: users
+    description: Users that are authenticated as voters (Not a completed member system.)
+schemes:
+  - http
+paths:
+  /campaigns:
+    get:
+      tags:
+        - campaigns
+      summary: List all campaigns
+      operationId: listCampaigns
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          in: query
+          type: string
+          description: Voter's user ID
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Campaign'
+        '400':
+          description: Invalid user ID
+    post:
+      tags:
+        - campaigns
+      summary: Add a new campaign
+      operationId: addCampaign
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Campaign'
+          description: Campaign to add
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Campaign'
+        '400':
+          description: Invalid parameters
+  '/campaigns/{campaignId}':
+    get:
+      tags:
+        - campaigns
+      summary: Find the existed campaign
+      operationId: findCampaign
+      produces:
+        - application/json
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          type: integer
+          format: int64
+          description: ID of campaign
+        - name: userId
+          in: query
+          type: string
+          description: Voter's user ID
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Campaign'
+        '400':
+          description: Invalid user ID
+        '404':
+          description: Campaign not found
+    put:
+      tags:
+        - campaigns
+      summary: Update an existing campaign
+      operationId: updateCampaign
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          type: integer
+          format: int64
+          description: ID of campaign
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Campaign'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Campaign'
+        '400':
+          description: Invalid parameters
+        '404':
+          description: Campaign not found
+    delete:
+      tags:
+        - campaigns
+      summary: Delete an existing campaign
+      operationId: deleteCampaign
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          type: integer
+          format: int64
+          description: ID of campaign
+      responses:
+        '200':
+          description: Successful operation
+        '404':
+          description: Campaign not found
+  '/campaigns/{campaignId}/votes':
+    post:
+      tags:
+        - campaigns
+      summary: Vote to the campaign
+      operationId: voteCampaign
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          type: integer
+          format: int64
+          description: ID of campaign
+        - name: userId
+          in: query
+          type: string
+          description: Voter's user ID
+          required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid user ID
+        '403':
+          description: The campaign no longer available for voting
+        '404':
+          description: Campaign not found
+  /users:
+    get:
+      tags:
+        - users
+      summary: List all users
+      operationId: listUser
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+    post:
+      tags:
+        - users
+      summary: Add new user
+      operationId: addUser
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: Invalid parameters
+definitions:
+  Campaign:
+    type: object
+    properties:
+      id:
+        type: string
+        pattern: '^[0-9a-f]{24}$'
+        readOnly: true
+      name:
+        type: string
+      start:
+        type: string
+        format: date-time
+      end:
+        type: string
+        format: date-time
+      votes:
+        type: array
+        readOnly: true
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            votes:
+              type: integer
+              format: int64
+            voted:
+              type: boolean
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+        pattern: '^[0-9a-f]{24}$'
+        readOnly: true
+      hkid_hash:
+        type: string
+        description: Hash of the HKID of the user

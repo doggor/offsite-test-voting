@@ -1,0 +1,21 @@
+{
+  "name": "voting-system",
+  "version": "1.0.0",
+  "description": "A simple voting system API.",
+  "main": "index.js",
+  "scripts": {
+    "prestart": "npm install",
+    "start": "node index.js"
+  },
+  "keywords": [
+    "voting"
+  ],
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "connect": "^3.2.0",
+    "js-yaml": "^3.3.0",
+    "mongoose": "^5.8.9",
+    "swagger-tools": "^0.10.4"
+  }
+}

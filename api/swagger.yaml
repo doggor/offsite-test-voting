@@ -1,0 +1,277 @@
+---
+swagger: "2.0"
+info:
+  description: "A simple voting system API."
+  version: "1.0.0"
+  title: "Voting System"
+  contact:
+    email: "seangle369@yahoo.com.hk"
+  license:
+    name: "UNLICENSED"
+host: "localhost:8080"
+basePath: "/api/v1"
+tags:
+- name: "campaigns"
+  description: "Campaigns for voting"
+- name: "users"
+  description: "Users that are authenticated as voters (Not a completed member system.)"
+schemes:
+- "http"
+paths:
+  /campaigns:
+    get:
+      tags:
+      - "campaigns"
+      summary: "List all campaigns"
+      operationId: "listCampaigns"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "userId"
+        in: "query"
+        description: "Voter's user ID"
+        required: false
+        type: "string"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Campaign"
+        "400":
+          description: "Invalid user ID"
+      x-swagger-router-controller: "Campaigns"
+    post:
+      tags:
+      - "campaigns"
+      summary: "Add a new campaign"
+      operationId: "addCampaign"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Campaign to add"
+        required: true
+        schema:
+          $ref: "#/definitions/Campaign"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Campaign"
+        "400":
+          description: "Invalid parameters"
+      x-swagger-router-controller: "Campaigns"
+  /campaigns/{campaignId}:
+    get:
+      tags:
+      - "campaigns"
+      summary: "Find the existed campaign"
+      operationId: "findCampaign"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "campaignId"
+        in: "path"
+        description: "ID of campaign"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "userId"
+        in: "query"
+        description: "Voter's user ID"
+        required: false
+        type: "string"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Campaign"
+        "400":
+          description: "Invalid user ID"
+        "404":
+          description: "Campaign not found"
+      x-swagger-router-controller: "Campaigns"
+    put:
+      tags:
+      - "campaigns"
+      summary: "Update an existing campaign"
+      operationId: "updateCampaign"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "campaignId"
+        in: "path"
+        description: "ID of campaign"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/Campaign"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Campaign"
+        "400":
+          description: "Invalid parameters"
+        "404":
+          description: "Campaign not found"
+      x-swagger-router-controller: "Campaigns"
+    delete:
+      tags:
+      - "campaigns"
+      summary: "Delete an existing campaign"
+      operationId: "deleteCampaign"
+      parameters:
+      - name: "campaignId"
+        in: "path"
+        description: "ID of campaign"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "Successful operation"
+        "404":
+          description: "Campaign not found"
+      x-swagger-router-controller: "Campaigns"
+  /campaigns/{campaignId}/votes:
+    post:
+      tags:
+      - "campaigns"
+      summary: "Vote to the campaign"
+      operationId: "voteCampaign"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "campaignId"
+        in: "path"
+        description: "ID of campaign"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "userId"
+        in: "query"
+        description: "Voter's user ID"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Successful operation"
+        "400":
+          description: "Invalid user ID"
+        "403":
+          description: "The campaign no longer available for voting"
+        "404":
+          description: "Campaign not found"
+      x-swagger-router-controller: "Campaigns"
+  /users:
+    get:
+      tags:
+      - "users"
+      summary: "List all users"
+      operationId: "listUser"
+      parameters: []
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/User"
+      x-swagger-router-controller: "Users"
+    post:
+      tags:
+      - "users"
+      summary: "Add new user"
+      operationId: "addUser"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/User"
+        "400":
+          description: "Invalid parameters"
+      x-swagger-router-controller: "Users"
+definitions:
+  Campaign:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        readOnly: true
+        pattern: "^[0-9a-f]{24}$"
+      name:
+        type: "string"
+      start:
+        type: "string"
+        format: "date-time"
+      end:
+        type: "string"
+        format: "date-time"
+      votes:
+        type: "array"
+        readOnly: true
+        items:
+          $ref: "#/definitions/Campaign_votes"
+    example:
+      name: "name"
+      start: "2000-01-23T04:56:07.000+00:00"
+      end: "2000-01-23T04:56:07.000+00:00"
+      votes:
+      - name: "name"
+        voted: true
+        votes: 0
+      - name: "name"
+        voted: true
+        votes: 0
+      id: "id"
+  User:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        readOnly: true
+        pattern: "^[0-9a-f]{24}$"
+      hkid_hash:
+        type: "string"
+        description: "Hash of the HKID of the user"
+    example:
+      hkid_hash: "hkid_hash"
+      id: "id"
+  Campaign_votes:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      votes:
+        type: "integer"
+        format: "int64"
+      voted:
+        type: "boolean"
+    example:
+      name: "name"
+      voted: true
+      votes: 0
