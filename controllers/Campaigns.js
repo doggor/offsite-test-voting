@@ -1,11 +1,9 @@
-'use strict';
-
-const utils = require('../utils/writer.js');
-const Campaigns = require('../service/CampaignsService');
+const utils = require("../utils/writer.js");
+const CampaignsService = require("../services/CampaignsService");
 
 module.exports.addCampaign = function addCampaign(req, res, next) {
-    const body = req.swagger.params['body'].value;
-    Campaigns.addCampaign(body)
+    const body = req.swagger.params["body"].value;
+    CampaignsService.addCampaign(body)
         .then(function (response) {
             utils.writeJson(res, response);
         })
@@ -15,8 +13,8 @@ module.exports.addCampaign = function addCampaign(req, res, next) {
 };
 
 module.exports.deleteCampaign = function deleteCampaign(req, res, next) {
-    const campaignId = req.swagger.params['campaignId'].value;
-    Campaigns.deleteCampaign(campaignId)
+    const campaignId = req.swagger.params["campaignId"].value;
+    CampaignsService.deleteCampaign(campaignId)
         .then(function (response) {
             utils.writeJson(res, response);
         })
@@ -26,9 +24,9 @@ module.exports.deleteCampaign = function deleteCampaign(req, res, next) {
 };
 
 module.exports.findCampaign = function findCampaign(req, res, next) {
-    const campaignId = req.swagger.params['campaignId'].value;
-    const userId = req.swagger.params['userId'].value;
-    Campaigns.findCampaign(campaignId, userId)
+    const campaignId = req.swagger.params["campaignId"].value;
+    const userId = req.swagger.params["userId"].value;
+    CampaignsService.findCampaign(campaignId, userId)
         .then(function (response) {
             utils.writeJson(res, response);
         })
@@ -38,8 +36,8 @@ module.exports.findCampaign = function findCampaign(req, res, next) {
 };
 
 module.exports.listCampaigns = function listCampaigns(req, res, next) {
-    const userId = req.swagger.params['userId'].value;
-    Campaigns.listCampaigns(userId)
+    const userId = req.swagger.params["userId"].value;
+    CampaignsService.listCampaigns(userId)
         .then(function (response) {
             utils.writeJson(res, response);
         })
@@ -49,9 +47,9 @@ module.exports.listCampaigns = function listCampaigns(req, res, next) {
 };
 
 module.exports.updateCampaign = function updateCampaign(req, res, next) {
-    const campaignId = req.swagger.params['campaignId'].value;
-    const body = req.swagger.params['body'].value;
-    Campaigns.updateCampaign(campaignId, body)
+    const campaignId = req.swagger.params["campaignId"].value;
+    const body = req.swagger.params["body"].value;
+    CampaignsService.updateCampaign(campaignId, body)
         .then(function (response) {
             utils.writeJson(res, response);
         })
@@ -61,9 +59,9 @@ module.exports.updateCampaign = function updateCampaign(req, res, next) {
 };
 
 module.exports.voteCampaign = function voteCampaign(req, res, next) {
-    const campaignId = req.swagger.params['campaignId'].value;
-    const userId = req.swagger.params['userId'].value;
-    Campaigns.voteCampaign(campaignId, userId)
+    const campaignId = req.swagger.params["campaignId"].value;
+    const userId = req.swagger.params["userId"].value;
+    CampaignsService.voteCampaign(campaignId, userId)
         .then(function (response) {
             utils.writeJson(res, response);
         })

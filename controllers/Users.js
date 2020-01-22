@@ -1,9 +1,9 @@
 const utils = require("../utils/writer.js");
-const Users = require("../service/UsersService");
+const UsersService = require("../services/UsersService");
 
 module.exports.addUser = function addUser(req, res, next) {
     const body = req.swagger.params["body"].value;
-    Users.addUser(body)
+    UsersService.addUser(body)
         .then(function (response) {
             utils.writeJson(res, response);
         })
@@ -13,7 +13,7 @@ module.exports.addUser = function addUser(req, res, next) {
 };
 
 module.exports.listUser = function listUser(req, res, next) {
-    Users.listUser()
+    UsersService.listUser()
         .then(function (response) {
             utils.writeJson(res, response);
         })

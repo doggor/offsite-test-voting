@@ -1,32 +1,26 @@
+const Campaign = require("../models/Campaign");
+const InvalidDataError = require("../errors/InvalidDataError");
+const ForbiddenError = require("../errors/ForbiddenError");
+const NotFoundError = require("../errors/NotFoundError");
+
 /**
  * Add a new campaign
  *
  * body Campaign Campaign to add
  * returns Campaign
  **/
-exports.addCampaign = function (body) {
-    return new Promise(function (resolve, reject) {
-        const examples = {};
-        examples["application/json"] = {
-            "end_at": "2000-01-23T04:56:07.000+00:00",
-            "name": "name",
-            "started_at": "2000-01-23T04:56:07.000+00:00",
-            "votes": [{
-                "name": "name",
-                "votes": 0
-            }, {
-                "name": "name",
-                "votes": 0
-            }],
-            "id": "id"
-        };
-        if (Object.keys(examples).length > 0) {
-            resolve(examples[Object.keys(examples)[0]]);
-        } else {
-            resolve();
-        }
+exports.addCampaign = async function (body) {
+    const campaign = await Campaign.create({
+        name: body.name,
+        start: body.start,
+        end: body.end,
+        votes: body.votes.map(option => ({
+            name: option.name,
+        })),
     });
-}
+
+    return campaign;
+};
 
 
 /**
@@ -35,11 +29,22 @@ exports.addCampaign = function (body) {
  * campaignId Long ID of campaign
  * no response value expected for this operation
  **/
-exports.deleteCampaign = function (campaignId) {
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
+exports.deleteCampaign = async function (campaignId) {
+    const campaign = await Campaign.findOne({
+        _id: campaignId,
+        deletedAt: {
+            $exists: false,
+        },
+    }).exec();
+
+    if (!campaign) {
+        throw new NotFoundError("Campaign Not Found");
+    }
+
+    //soft delete
+    campaign.deletedAt = new Date();
+    await campaign.save();
+};
 
 
 /**
@@ -49,29 +54,36 @@ exports.deleteCampaign = function (campaignId) {
  * userId String Voter"s user ID (optional)
  * returns Campaign
  **/
-exports.findCampaign = function (campaignId, userId) {
-    return new Promise(function (resolve, reject) {
-        const examples = {};
-        examples["application/json"] = {
-            "end_at": "2000-01-23T04:56:07.000+00:00",
-            "name": "name",
-            "started_at": "2000-01-23T04:56:07.000+00:00",
-            "votes": [{
-                "name": "name",
-                "votes": 0
-            }, {
-                "name": "name",
-                "votes": 0
-            }],
-            "id": "id"
-        };
-        if (Object.keys(examples).length > 0) {
-            resolve(examples[Object.keys(examples)[0]]);
-        } else {
-            resolve();
+exports.findCampaign = async function (campaignId, userId) {
+    const campaign = await Campaign.findOne({
+        _id: campaignId,
+        deletedAt: {
+            $exists: false,
+        },
+    }).lean().exec();
+
+    if (!campaign) {
+        throw new NotFoundError("Campaign Not Found");
+    }
+
+    if (userId) {
+        const user = await user.findOne({
+            _id: userId,
+            deletedAt: {
+                $exists: false,
+            },
+        }).lean().exec();
+
+        if (!user) {
+            throw new InvalidDataError("User Not Found");
         }
-    });
-}
+
+        //TODO: find user vote and merge to result
+
+    }
+
+    return campaign;
+};
 
 
 /**
@@ -80,41 +92,31 @@ exports.findCampaign = function (campaignId, userId) {
  * userId String Voter"s user ID (optional)
  * returns List
  **/
-exports.listCampaigns = function (userId) {
-    return new Promise(function (resolve, reject) {
-        const examples = {};
-        examples["application/json"] = [{
-            "end_at": "2000-01-23T04:56:07.000+00:00",
-            "name": "name",
-            "started_at": "2000-01-23T04:56:07.000+00:00",
-            "votes": [{
-                "name": "name",
-                "votes": 0
-            }, {
-                "name": "name",
-                "votes": 0
-            }],
-            "id": "id"
-        }, {
-            "end_at": "2000-01-23T04:56:07.000+00:00",
-            "name": "name",
-            "started_at": "2000-01-23T04:56:07.000+00:00",
-            "votes": [{
-                "name": "name",
-                "votes": 0
-            }, {
-                "name": "name",
-                "votes": 0
-            }],
-            "id": "id"
-        }];
-        if (Object.keys(examples).length > 0) {
-            resolve(examples[Object.keys(examples)[0]]);
-        } else {
-            resolve();
+exports.listCampaigns = async function (userId) {
+    const campaigns = await Campaign.find({
+        deletedAt: {
+            $exists: false
+        },
+    }).lean().exec();
+
+    if (userId) {
+        const user = await User.findOne({
+            _id: userId,
+            deletedAt: {
+                $exists: false,
+            },
+        }).lean().exec();
+
+        if (!user) {
+            throw new InvalidDataError("User Not Found");
         }
-    });
-}
+
+        //TODO: find user vote and merge to result
+
+    }
+
+    return campaigns;
+};
 
 
 /**
@@ -125,28 +127,35 @@ exports.listCampaigns = function (userId) {
  * returns Campaign
  **/
 exports.updateCampaign = function (campaignId, body) {
-    return new Promise(function (resolve, reject) {
-        const examples = {};
-        examples["application/json"] = {
-            "end_at": "2000-01-23T04:56:07.000+00:00",
-            "name": "name",
-            "started_at": "2000-01-23T04:56:07.000+00:00",
-            "votes": [{
-                "name": "name",
-                "votes": 0
-            }, {
-                "name": "name",
-                "votes": 0
-            }],
-            "id": "id"
-        };
-        if (Object.keys(examples).length > 0) {
-            resolve(examples[Object.keys(examples)[0]]);
-        } else {
-            resolve();
-        }
-    });
-}
+    const campaign = await Campaign.findOne({
+        _id: campaignId,
+        deletedAt: {
+            $exists: false
+        },
+    }).exec();
+
+    if (!campaign) {
+        throw new NotFoundError("Campaign Not Found");
+    }
+
+    //convert date string to js object
+    const start = new Date(body.start);
+    const end = new Date(body.end);
+
+    //validate time range
+    if (isNaN(start) || isNaN(end) || start >= end) {
+        throw new InvalidDataError("Invalid Time Range");
+    }
+
+    //save records
+    campaign.name = body.name;
+    campaign.start = start;
+    campaign.end = end;
+
+    await campaign.save();
+
+    return campaign;
+};
 
 
 /**
@@ -157,26 +166,30 @@ exports.updateCampaign = function (campaignId, body) {
  * returns Campaign
  **/
 exports.voteCampaign = function (campaignId, userId) {
-    return new Promise(function (resolve, reject) {
-        const examples = {};
-        examples["application/json"] = {
-            "end_at": "2000-01-23T04:56:07.000+00:00",
-            "name": "name",
-            "started_at": "2000-01-23T04:56:07.000+00:00",
-            "votes": [{
-                "name": "name",
-                "votes": 0
-            }, {
-                "name": "name",
-                "votes": 0
-            }],
-            "id": "id"
-        };
-        if (Object.keys(examples).length > 0) {
-            resolve(examples[Object.keys(examples)[0]]);
-        } else {
-            resolve();
-        }
-    });
-}
+    const campaign = await Campaign.findOne({
+        _id: campaignId,
+        deletedAt: {
+            $exists: false,
+        },
+    }).lean().exec();
+
+    if (!campaign) {
+        throw new NotFoundError("Campaign Not Found");
+    }
+
+    const user = await user.findOne({
+        _id: userId,
+        deletedAt: {
+            $exists: false,
+        },
+    }).lean().exec();
+
+    if (!user) {
+        throw new InvalidDataError("User Not Found");
+    }
+
+    //TODO record user vote of the the campaign
+
+    return campaign;
+};
 
