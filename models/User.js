@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
     {
-        hkid_hash: { type: String, index: true },
+        hkidHash: String,
+        offset: Number, //unique number represents the user position on a bitmap
         deletedAt: Date,
     },
     {
@@ -10,6 +11,6 @@ const UserSchema = new mongoose.Schema(
     }
 );
 
-const UserModel = mongoose.model("User", UserSchema);
+UserSchema.index({ hkidHash: 1 }, { unique: true });
 
-module.exports = UserModel;
+module.exports = mongoose.model("User", UserSchema);

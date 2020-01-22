@@ -1,30 +1,32 @@
 const mongoose = require("mongoose");
 
 /** hold the mongodb connection */
-let connection;
+let connectionPromise;
 
 /**
- * Initialize mongodb connection.
+ * Function to initialize mongodb connection.
  * Must call before using models.
  */
-async function init() {
-    if (connection) {
-        return connection;
+exports.init = async function () {
+    if (connectionPromise) {
+        return await connectionPromise;
     }
 
-    connection = await mongoose.connect("mongodb://localhost/voting",
+    const connectionString = process.env.MONGODB_CONN;
+
+    if (!connectionString) {
+        throw new Error("Env variable MONGODB_CONN not found!");
+    }
+
+    connectionPromise = mongoose.connect(connectionString,
         {
             useNewUrlParser: true,
+            useUnifiedTopology: true,
             keepAlive: true,
-            autoReconnect: true,
-            reconnectTries: Number.MAX_VALUE,
-            reconnectInterval: 500,
             poolSize: 1,
-        },
-        err => (err ? console.error(err) : void 0)
+            autoIndex: false,
+        }
     );
 
-    return connection;
-}
-
-module.exports = init;
+    return await connectionPromise;
+};

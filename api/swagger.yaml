@@ -38,7 +38,7 @@ paths:
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/Campaign"
+              $ref: "#/definitions/CampaignWithVoted"
         "400":
           description: "Invalid user ID"
       x-swagger-router-controller: "Campaigns"
@@ -79,8 +79,7 @@ paths:
         in: "path"
         description: "ID of campaign"
         required: true
-        type: "integer"
-        format: "int64"
+        type: "string"
       - name: "userId"
         in: "query"
         description: "Voter's user ID"
@@ -90,7 +89,7 @@ paths:
         "200":
           description: "Successful operation"
           schema:
-            $ref: "#/definitions/Campaign"
+            $ref: "#/definitions/CampaignWithVoted"
         "400":
           description: "Invalid user ID"
         "404":
@@ -110,13 +109,12 @@ paths:
         in: "path"
         description: "ID of campaign"
         required: true
-        type: "integer"
-        format: "int64"
+        type: "string"
       - in: "body"
         name: "body"
         required: true
         schema:
-          $ref: "#/definitions/Campaign"
+          $ref: "#/definitions/CampaignUpdateRequest"
       responses:
         "200":
           description: "Successful operation"
@@ -137,8 +135,7 @@ paths:
         in: "path"
         description: "ID of campaign"
         required: true
-        type: "integer"
-        format: "int64"
+        type: "string"
       responses:
         "200":
           description: "Successful operation"
@@ -160,13 +157,12 @@ paths:
         in: "path"
         description: "ID of campaign"
         required: true
-        type: "integer"
-        format: "int64"
-      - name: "userId"
-        in: "query"
-        description: "Voter's user ID"
-        required: true
         type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/VoteCreationRequest"
       responses:
         "200":
           description: "Successful operation"
@@ -206,7 +202,7 @@ paths:
         name: "body"
         required: true
         schema:
-          $ref: "#/definitions/User"
+          $ref: "#/definitions/UserCreationRequest"
       responses:
         "200":
           description: "Successful operation"
@@ -214,6 +210,8 @@ paths:
             $ref: "#/definitions/User"
         "400":
           description: "Invalid parameters"
+        "403":
+          description: "THe HKID already used for registration"
       x-swagger-router-controller: "Users"
 definitions:
   Campaign:
@@ -222,7 +220,6 @@ definitions:
       id:
         type: "string"
         readOnly: true
-        pattern: "^[0-9a-f]{24}$"
       name:
         type: "string"
       start:
@@ -231,47 +228,153 @@ definitions:
       end:
         type: "string"
         format: "date-time"
-      votes:
+      options:
         type: "array"
-        readOnly: true
         items:
-          $ref: "#/definitions/Campaign_votes"
+          $ref: "#/definitions/Campaign_options"
     example:
       name: "name"
       start: "2000-01-23T04:56:07.000+00:00"
+      options:
+      - name: "name"
+        votes: 0
+        id: "id"
+      - name: "name"
+        votes: 0
+        id: "id"
       end: "2000-01-23T04:56:07.000+00:00"
-      votes:
-      - name: "name"
-        voted: true
-        votes: 0
-      - name: "name"
-        voted: true
-        votes: 0
       id: "id"
+  CampaignWithVoted:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        readOnly: true
+      name:
+        type: "string"
+      start:
+        type: "string"
+        format: "date-time"
+      end:
+        type: "string"
+        format: "date-time"
+      options:
+        type: "array"
+        items:
+          $ref: "#/definitions/CampaignWithVoted_options"
+    example:
+      name: "name"
+      start: "2000-01-23T04:56:07.000+00:00"
+      options:
+      - name: "name"
+        voted: true
+        votes: 0
+        id: "id"
+      - name: "name"
+        voted: true
+        votes: 0
+        id: "id"
+      end: "2000-01-23T04:56:07.000+00:00"
+      id: "id"
+  CampaignUpdateRequest:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      start:
+        type: "string"
+        format: "date-time"
+      end:
+        type: "string"
+        format: "date-time"
+      options:
+        type: "array"
+        items:
+          $ref: "#/definitions/CampaignUpdateRequest_options"
+    example:
+      name: "name"
+      start: "2000-01-23T04:56:07.000+00:00"
+      options:
+      - name: "name"
+        id: "id"
+      - name: "name"
+        id: "id"
+      end: "2000-01-23T04:56:07.000+00:00"
   User:
     type: "object"
     properties:
       id:
         type: "string"
         readOnly: true
-        pattern: "^[0-9a-f]{24}$"
-      hkid_hash:
-        type: "string"
-        description: "Hash of the HKID of the user"
     example:
-      hkid_hash: "hkid_hash"
       id: "id"
-  Campaign_votes:
+  UserCreationRequest:
     type: "object"
     properties:
+      hkid:
+        type: "string"
+        pattern: "^[A-Z]\\d{6}\\(\\d\\)$"
+    example:
+      hkid: "hkid"
+  VoteCreationRequest:
+    type: "object"
+    properties:
+      userId:
+        type: "string"
+      hkid:
+        type: "string"
+        pattern: "^[A-Z]\\d{6}\\(\\d\\)$"
+      optionId:
+        type: "string"
+    example:
+      optionId: "optionId"
+      userId: "userId"
+      hkid: "hkid"
+  Campaign_options:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        readOnly: true
       name:
         type: "string"
       votes:
         type: "integer"
         format: "int64"
+        readOnly: true
+    example:
+      name: "name"
+      votes: 0
+      id: "id"
+  CampaignWithVoted_options:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        readOnly: true
+      name:
+        type: "string"
+      votes:
+        type: "integer"
+        format: "int64"
+        readOnly: true
       voted:
         type: "boolean"
+        readOnly: true
     example:
       name: "name"
       voted: true
       votes: 0
+      id: "id"
+  CampaignUpdateRequest_options:
+    type: "object"
+    required:
+    - "name"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+    example:
+      name: "name"
+      id: "id"

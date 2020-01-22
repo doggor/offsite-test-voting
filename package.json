@@ -4,8 +4,7 @@
   "description": "A simple voting system API.",
   "main": "index.js",
   "scripts": {
-    "prestart": "npm install",
-    "start": "node index.js"
+    "start": "cross-env node -r dotenv/config index.js"
   },
   "keywords": [
     "voting"
@@ -14,8 +13,14 @@
   "private": true,
   "dependencies": {
     "connect": "^3.2.0",
+    "dotenv": "^8.2.0",
     "js-yaml": "^3.3.0",
     "mongoose": "^5.8.9",
-    "swagger-tools": "^0.10.4"
+    "redis": "^2.8.0",
+    "swagger-tools": "^0.10.4",
+    "validid": "^1.2.0"
+  },
+  "devDependencies": {
+    "cross-env": "^6.0.3"
   }
 }

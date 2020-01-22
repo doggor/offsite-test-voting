@@ -5,9 +5,10 @@ const CampaignSchema = new mongoose.Schema(
         name: String,
         start: Date,
         end: Date,
-        votes: [
+        options: [
             {
                 name: String,
+                count: Number,
             }
         ],
         deletedAt: Date,
@@ -17,6 +18,4 @@ const CampaignSchema = new mongoose.Schema(
     }
 );
 
-const CampaignModel = mongoose.model("Campaign", CampaignSchema);
-
-module.exports = CampaignModel;
+module.exports = mongoose.model("Campaign", CampaignSchema);

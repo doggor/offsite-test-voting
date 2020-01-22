@@ -1,0 +1,25 @@
+version: "3.7"
+services:
+    mongodb:
+        image: mongo:3.4.23
+        networks:
+            voting-net:
+                ipv4_address: 172.196.0.2
+        ports:
+            - 27017:27017
+        restart: always
+    redis:
+        image: redis:5.0.7
+        networks:
+            voting-net:
+                ipv4_address: 172.196.0.3
+        ports:
+            - 6379:6379
+        #entrypoint: redis-server --appendonly yes
+        restart: always
+
+networks:
+    voting-net:
+        ipam:
+            config:
+                - subnet: "172.196.0.0/24"
