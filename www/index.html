@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Votes Distribution</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.6.0/echarts.min.js"></script>
+    <style>
+        .chart {
+            width: 1000px;
+            height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        (async function () {
+            //retrieve all campaigns
+            const response = await fetch("http://localhost:8080/api/v1/campaigns");
+
+            if (!response.ok) {
+                alert("Cannot fetch the data!");
+                return;
+            }
+
+            //extract data
+            const campaigns = await response.json();
+
+            //rendering
+            for (let campaign of campaigns) {
+                const div = document.createElement("div");
+                div.className = "chart";
+                document.body.append(div);
+                const chart = echarts.init(div);
+                chart.setOption({
+                    title: {
+                        text: campaign.name,
+                    },
+                    dataset: {
+                        source: [
+                            ["scroe", "amount", "option"],
+                            ...campaign.options.map(option => ([Math.ceil(option.votes / campaign.votes * 100), option.votes, option.name]))
+                        ],
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    series: [
+                        {
+                            type: 'pie',
+                            radius: '50%',
+                            center: ['50%', '40%'],
+                            label: {
+                                formatter: '{@option}, {@amount} votes ({d}%)'
+                            },
+                            encode: {
+                                itemName: 'amount',
+                                value: 'amount',
+                            }
+                        }
+                    ]
+                });
+            }
+
+        })().catch(console.error);
+    </script>
+</body>
+
+</html>
