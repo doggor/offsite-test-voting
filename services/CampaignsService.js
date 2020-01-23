@@ -19,7 +19,9 @@ exports.addCampaign = async function (body) {
         end: new Date(body.end),
         options: body.options.map(option => ({
             name: option.name,
+            votes: 0,
         })),
+        votes: 0,
     });
 
     //prepare result
@@ -31,8 +33,9 @@ exports.addCampaign = async function (body) {
         options: campaign.options.map(option => ({
             id: option._id,
             name: option.name,
-            votes: 0,
+            votes: option.votes,
         })),
+        votes: campaign.votes,
     };
 
     return result;
@@ -85,7 +88,7 @@ exports.findCampaign = async function (campaignId, userId) {
     //find user if presented
     let user;
     if (userId) {
-        user = await user.findOne({
+        user = await User.findOne({
             _id: userId,
             deletedAt: {
                 $exists: false,
@@ -104,7 +107,7 @@ exports.findCampaign = async function (campaignId, userId) {
         options.push({
             id: option._id,
             name: option.name,
-            votes: await redis.getVoteCount(option._id.toString()),
+            votes: option.votes,
             voted: user ? (await redis.isVoted(option._id.toString(), user.offset)) : 0,
         });
     }
@@ -114,6 +117,7 @@ exports.findCampaign = async function (campaignId, userId) {
         start: campaign.start.toISOString(),
         end: campaign.end.toISOString(),
         options,
+        votes: campaign.votes,
     };
 
     return result;
@@ -157,7 +161,7 @@ exports.listCampaigns = async function (userId) {
             options.push({
                 id: option._id,
                 name: option.name,
-                votes: await redis.getVoteCount(option._id.toString()),
+                votes: option.votes,
                 voted: user ? (await redis.isVoted(option._id.toString(), user.offset)) : false,
             });
         }
@@ -236,7 +240,7 @@ exports.updateCampaign = async function (campaignId, body) {
         options.push({
             id: option._id,
             name: option.name,
-            votes: await redis.getVoteCount(option._id.toString()),
+            votes: option.votes,
         });
     }
     const result = {
@@ -270,7 +274,7 @@ exports.voteCampaign = async function (campaignId, body) {
         deletedAt: {
             $exists: false,
         },
-    }).lean().exec();
+    }).exec();
 
     if (!campaign) {
         throw new NotFoundError("Campaign Not Found");
@@ -305,4 +309,29 @@ exports.voteCampaign = async function (campaignId, body) {
     if (!success) {
         throw new ForbiddenError("Already Voted");
     }
+
+    //update votes record of the campaign later
+    (async function () {
+        try {
+            await Campaign.updateOne({
+                _id: campaignId,
+                options: {
+                    $elemMatch: {
+                        _id: body.optionId,
+                    },
+                },
+                deletedAt: {
+                    $exists: false,
+                },
+            }, {
+                $inc: {
+                    votes: 1,
+                    "options.$.votes": 1,
+                }
+            });
+        }
+        catch (err) {
+            console.error(err);
+        }
+    })();
 };

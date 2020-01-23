@@ -15,7 +15,7 @@ services:
                 ipv4_address: 172.196.0.3
         ports:
             - 6379:6379
-        #entrypoint: redis-server --appendonly yes
+        entrypoint: redis-server --appendonly yes
         restart: always
 
 networks:

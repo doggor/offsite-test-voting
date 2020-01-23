@@ -34,7 +34,6 @@ exports.addUser = async function (body) {
 
     const result = {
         id: user._id.toString(),
-        hkidHash: user.hkidHash,
     };
 
     return result;

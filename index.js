@@ -4,6 +4,7 @@ const http = require("http");
 const swaggerTools = require("swagger-tools");
 const jsyaml = require("js-yaml");
 const { init: modelInit } = require("./models");
+const startDaemon = require("./daemon");
 
 const app = require("connect")();
 
@@ -39,7 +40,7 @@ async function main() {
     // Serve the Swagger documents and Swagger UI
     app.use(swaggerUi());
 
-    // establish DB connection
+    // Establish DB connection
     await modelInit();
 
     // Start the server
@@ -47,12 +48,18 @@ async function main() {
         http.createServer(app).listen(serverPort, resolve);
     });
 
-    //PM2 graceful start notification
+    // Start daemon
+    startDaemon().catch(err => {
+        console.error(err);
+        process.exit(1);
+    });
+
+    // PM2 graceful start notification
     if (typeof process.send === "function") {
         process.send("ready");
     }
 
-    //echo messages for launch success
+    // Echo messages for launch success
     console.log("Your server is listening on port %d (http://localhost:%d)", serverPort, serverPort);
     console.log("Swagger-ui is available on http://localhost:%d/docs", serverPort);
 }

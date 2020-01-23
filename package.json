@@ -15,9 +15,11 @@
     "connect": "^3.2.0",
     "dotenv": "^8.2.0",
     "js-yaml": "^3.3.0",
+    "lodash.once": "^4.1.1",
     "mongoose": "^5.8.9",
     "redis": "^2.8.0",
     "swagger-tools": "^0.10.4",
+    "uuid": "^3.4.0",
     "validid": "^1.2.0"
   },
   "devDependencies": {

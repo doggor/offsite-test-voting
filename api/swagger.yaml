@@ -313,7 +313,6 @@ definitions:
     properties:
       hkid:
         type: "string"
-        pattern: "^[A-Z]\\d{6}\\(\\d\\)$"
     example:
       hkid: "hkid"
   VoteCreationRequest:
@@ -323,7 +322,6 @@ definitions:
         type: "string"
       hkid:
         type: "string"
-        pattern: "^[A-Z]\\d{6}\\(\\d\\)$"
       optionId:
         type: "string"
     example:
