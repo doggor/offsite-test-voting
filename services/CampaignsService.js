@@ -135,7 +135,9 @@ exports.listCampaigns = async function (userId) {
         deletedAt: {
             $exists: false
         },
-    }).lean().exec();
+    })
+        .sort({ end: -1, votes: -1 })
+        .lean().exec();
 
     //find user if presented
     let user;
