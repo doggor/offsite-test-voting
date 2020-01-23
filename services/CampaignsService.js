@@ -172,6 +172,7 @@ exports.listCampaigns = async function (userId) {
             start: campaign.start.toISOString(),
             end: campaign.end.toISOString(),
             options,
+            votes: campaign.votes,
         });
     }
 
@@ -249,6 +250,7 @@ exports.updateCampaign = async function (campaignId, body) {
         start: campaign.start.toISOString(),
         end: campaign.end.toISOString(),
         options,
+        votes: campaign.votes,
     };
 
     return result;
