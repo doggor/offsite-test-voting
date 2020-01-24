@@ -332,6 +332,10 @@ exports.voteCampaign = async function (campaignId, body) {
                     votes: 1,
                     "options.$.votes": 1,
                 }
+            }, {
+                writeConcern: {
+                    w: 0, //requests no acknowledgment
+                },
             });
         }
         catch (err) {
