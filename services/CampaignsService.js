@@ -108,7 +108,7 @@ exports.findCampaign = async function (campaignId, userId) {
             id: option._id,
             name: option.name,
             votes: option.votes,
-            voted: user ? (await redis.isVoted(option._id.toString(), user.offset)) : 0,
+            voted: user ? (await redis.isVoted(option._id.toString(), user.offset)) : false,
         });
     }
     const result = {
