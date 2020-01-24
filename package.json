@@ -4,7 +4,8 @@
   "description": "A simple voting system API.",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env node -r dotenv/config index.js"
+    "start": "cross-env node -r dotenv/config index.js",
+    "test": "jest"
   },
   "keywords": [
     "voting"
@@ -15,6 +16,7 @@
     "connect": "^3.2.0",
     "dotenv": "^8.2.0",
     "js-yaml": "^3.3.0",
+    "lodash.clonedeep": "^4.5.0",
     "lodash.once": "^4.1.1",
     "mongoose": "^5.8.9",
     "redis": "^2.8.0",
@@ -23,6 +25,7 @@
     "validid": "^1.2.0"
   },
   "devDependencies": {
-    "cross-env": "^6.0.3"
+    "cross-env": "^6.0.3",
+    "jest": "^25.1.0"
   }
 }
