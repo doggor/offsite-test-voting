@@ -6,24 +6,27 @@ const Campaign = require("../models/Campaign");
 //represent this process
 const DAEMON_ID = uuid();
 
-//true if the daemon hold the global daemon flag
-let flag = false;
+//true if the daemon hold the global daemon lock
+let lock = false;
 
 /**
  * The main function of the daemon.
  * Should not call twice.
+ * @param {SocketIO.Server} io
  */
-async function main() {
-    //continuously try setting the flag
+async function main(io) {
+    boardcastVoteUpdates(io);
+
+    //continuously try setting the lock
     //and start tasks once it got.
     for (; ;) {
-        //try set the daemon flag, 30s timeout
-        const newFlag = await redis.setDaemonUp(DAEMON_ID, 30);
+        //try set the daemon lock, 30s timeout
+        const newlock = await redis.getDaemonLock(DAEMON_ID, 30);
 
-        //start running tasks if just got the flag
-        if (flag === false && newFlag === true) {
-            flag = true;
-            startTasks();
+        //start flushVotes() if just got the lock
+        if (lock === false && newlock === true) {
+            lock = true;
+            flushDataPeriodically();
         }
 
         //wait 15s before next try/update
@@ -32,22 +35,21 @@ async function main() {
 }
 
 /**
- * Daemon tasks - update votes information from redis to mongodb
+ * Continuously update votes information from redis to mongodb
+ * to ensure that the data in mongodb is consistent with redis.
  */
-async function startTasks() {
+async function flushDataPeriodically() {
     //flush the data peridically
     for (; ;) {
-        //return when it no longer holds the flag
-        if (!flag) {
+        //return when it no longer holds the lock
+        if (!lock) {
             return;
         }
 
         //update votes information
         try {
             const campaigns = await Campaign.find({
-                deletedAt: {
-                    $exists: false
-                },
+                deletedAt: { $exists: false },
             }).exec();
 
             for (let campaign of campaigns) {
@@ -69,6 +71,36 @@ async function startTasks() {
         //wait 5s before next epoch
         new Promise(resolve => setTimeout(resolve, 5000));
     }
+}
+
+/**
+ * Register listner for boardcasting the latest campaign data
+ * each time when a vote update event emit.
+ * @param {SocketIO.Server} io
+ * @return {Function} unregister
+ */
+function boardcastVoteUpdates(io) {
+    return redis.onVoteUpdate(async (campaignId, optionId) => {
+        //boardcast latest campaign data
+        const campaign = await Campaign.findOne({
+            _id: campaignId,
+            deletedAt: { $exists: false },
+        }).lean().exec();
+
+        if (campaign) {
+            io.sockets.emit("voteUpdate", {
+                campaign: {
+                    id: campaign._id,
+                    name: campaign.name,
+                    options: campaign.options.map(option => ({
+                        id: option._id,
+                        name: option.name,
+                        votes: option.votes,
+                    })),
+                }
+            });
+        }
+    });
 }
 
 //export main function that is restricted to be invoked once only

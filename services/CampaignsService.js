@@ -314,9 +314,10 @@ exports.voteCampaign = async function (campaignId, body) {
         throw new ForbiddenError("Already Voted");
     }
 
-    //update votes record of the campaign later
+    //increase vote count in mongodb and notify this update
     (async function () {
         try {
+            //increase vote count
             await Campaign.updateOne({
                 _id: campaignId,
                 options: {
@@ -332,11 +333,10 @@ exports.voteCampaign = async function (campaignId, body) {
                     votes: 1,
                     "options.$.votes": 1,
                 }
-            }, {
-                writeConcern: {
-                    w: 0, //requests no acknowledgment
-                },
-            });
+            }).exec();
+
+            //notify deamons for boardcasting this message to clients
+            await redis.notifyVoteUpdate(campaignId, body.optionId);
         }
         catch (err) {
             console.error(err);

@@ -20,6 +20,7 @@
     "lodash.once": "^4.1.1",
     "mongoose": "^5.8.9",
     "redis": "^2.8.0",
+    "socket.io": "^2.3.0",
     "swagger-tools": "^0.10.4",
     "uuid": "^3.4.0",
     "validid": "^1.2.0"

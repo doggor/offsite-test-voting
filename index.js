@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
+const socketio = require("socket.io");
 const swaggerTools = require("swagger-tools");
 const jsyaml = require("js-yaml");
 const { init: modelInit } = require("./models");
@@ -43,13 +44,19 @@ async function main() {
     // Establish DB connection
     await modelInit();
 
-    // Start the server
+    // Create http server
+    const server = http.createServer(app);
+
+    // Bind socketio to server
+    const io = socketio.listen(server)
+
+    // Start server
     await new Promise(resolve => {
-        http.createServer(app).listen(serverPort, resolve);
+        server.listen(serverPort, resolve);
     });
 
     // Start daemon
-    startDaemon().catch(err => {
+    startDaemon(io).catch(err => {
         console.error(err);
         process.exit(1);
     });

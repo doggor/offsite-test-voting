@@ -18,21 +18,26 @@ function newClient() {
  * Function to return redis client for regular use.
  */
 const getClient = (() => {
-    /** hold the redis connection (regular mode)
-     * @type redis.RedisClient
-     */
+    /** @type redis.RedisClient */
     let client;
 
-    return function () {
-        return client || (client = newClient());
-    };
+    return () => client || (client = newClient());
 })();
 
+/**
+ * Function to return redis client for publishing event
+ */
+const getPublisher = (() => {
+    /** @type redis.RedisClient */
+    let client;
+
+    return () => client || (client = newClient());
+})();
 
 /**
  * Return a new user offset number for bitmap.
  */
-exports.getNewUserOffset = async function () {
+exports.getNewUserOffset = async function() {
     const client = getClient();
 
     return await new Promise((resolve, reject) => {
@@ -49,7 +54,7 @@ exports.getNewUserOffset = async function () {
  * @param {number} userOffset the bitmap offset representing the user
  * @param {string[]} optionIdList list of options that user should not voted before
  */
-exports.setVote = async function (campaignOptionId, userOffset, optionIdList) {
+exports.setVote = async function(campaignOptionId, userOffset, optionIdList) {
     if (typeof campaignOptionId !== "string") {
         throw new TypeError("Invalid campaignOptionId"); Infinity;
     }
@@ -83,11 +88,64 @@ return true
 };
 
 /**
+ * Notify vote change og a campaign
+ * @param {string} campaignId
+ * @param {string} campaignOptionId
+ */
+exports.notifyVoteUpdate = async function(campaignId, campaignOptionId) {
+    const publisher = getPublisher();
+    return await new Promise((resolve, reject) => {
+        publisher.publish("voteUpdate", `${campaignId} ${campaignOptionId}`, (err, reply) => {
+            err ? reject(err) : resolve(reply);
+        });
+    });
+}
+
+/**
+ * Function to register listener for vote update event (emit by notifyVoteUpdate())
+ * @param {Function} listener to register for vote update event. (arg1: campaignId, arg2: campaignOptionId)=>void
+ * @return {Function} the unregister of the listener
+ */
+exports.onVoteUpdate = (() => {
+    /** @type redis.RedisClient */
+    let subscriber;
+    /** @type Function[] */
+    let listenerList = [];
+
+    return function(listener) {
+        listenerList.push(listener);
+
+        if (!subscriber) {
+            subscriber = newClient();
+            subscriber.on("message", (channel, msg) => {
+                const [campaignId, optionId] = msg.split(' ');
+                for (let listener of listenerList) {
+                    try {
+                        listener(campaignId, optionId)
+                    }
+                    catch (err) {
+                        console.error(err);
+                    }
+                }
+            });
+            subscriber.subscribe("voteUpdate");
+        }
+
+        return () => {
+            const idx = listenerList.indexOf(listener);
+            if (idx > -1) {
+                listenerList.splice(idx, 1);
+            }
+        };
+    }
+})();
+
+/**
  * Return the total number of votes of the campaign option.
  * @param {string} campaignOptionId ID of the campaign option
  * @return {Promise<number>}
  */
-exports.getVoteCount = async function (campaignOptionId) {
+exports.getVoteCount = async function(campaignOptionId) {
     if (typeof campaignOptionId !== "string") {
         throw new TypeError("Invalid campaignOptionId"); Infinity;
     }
@@ -107,7 +165,7 @@ exports.getVoteCount = async function (campaignOptionId) {
  * @param {number} userOffset the bitmap offset representing the user
  * @return {Promise<boolean>}
  */
-exports.isVoted = async function (campaignOptionId, userOffset) {
+exports.isVoted = async function(campaignOptionId, userOffset) {
     if (typeof campaignOptionId !== "string") {
         throw new TypeError("Invalid campaignOptionId"); Infinity;
     }
@@ -126,25 +184,25 @@ exports.isVoted = async function (campaignOptionId, userOffset) {
 };
 
 /**
- * Return true if successfully set or extends the flag
- * in which the flag is not yet set by others.
+ * Return true if successfully set or extends the lock
+ * in which the lock is not yet set by others (mutex).
  * @param {string} daemonId ID of the daemon
- * @param {number} timeout flag expiry in seconds
+ * @param {number} timeout lock expiry in seconds
  * @return {Promise<boolean>}
  */
-exports.setDaemonUp = async function (daemonId, timeout) {
+exports.getDaemonLock = async function(daemonId, timeout) {
     if (typeof timeout !== "number" || timeout <= 0 || Math.ceil(timeout) !== timeout) {
         throw new TypeError("Invalid timeout");
     }
 
     //script to evalute on redis
-    //flag == nil:     no body hold the flag, set it to be daemonId
-    //flag == KEYS[1]: this daemon already hold the flag, extends the timeout
-    const daemonUpScript = `
-local flag = redis.call('get', 'daemonUp')
-if (not(flag) or flag == KEYS[1])
+    //lock == nil:     no body hold the lock, set it to be daemonId
+    //lock == KEYS[1]: this daemon already hold the lock, extends the timeout
+    const daemonLockScript = `
+local lock = redis.call('get', 'daemonLock')
+if (not(lock) or lock == KEYS[1])
 then
-    redis.call('set', 'daemonUp', KEYS[1], 'EX', KEYS[2])
+    redis.call('set', 'daemonLock', KEYS[1], 'EX', KEYS[2])
     return true
 end
 return false
@@ -153,7 +211,7 @@ return false
     const client = getClient();
 
     return await new Promise((resolve, reject) => {
-        client.eval(daemonUpScript, 2, daemonId, timeout, (err, result) => {
+        client.eval(daemonLockScript, 2, daemonId, timeout, (err, result) => {
             err ? reject(err) : resolve(!!result);
         });
     });

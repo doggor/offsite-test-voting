@@ -17,6 +17,8 @@ tags:
   description: "Users that are authenticated as voters (Not a completed member system.)"
 - name: "pages"
   description: "HTML pages for demonstrations"
+- name: "socket.io"
+  description: "SocketIO connection entry for receiving vote count updates"
 schemes:
 - "http"
 paths:
@@ -190,19 +192,6 @@ paths:
             items:
               $ref: "#/definitions/User"
       x-swagger-router-controller: "Users"
-  /pages/charts:
-    get:
-      tags:
-      - "pages"
-      summary: "HTML page"
-      operationId: "getPage"
-      produces:
-      - "text/html"
-      parameters: []
-      responses:
-        "200":
-          description: "HTML page"
-      x-swagger-router-controller: "Pages"
     post:
       tags:
       - "users"
@@ -228,6 +217,29 @@ paths:
         "403":
           description: "THe HKID already used for registration"
       x-swagger-router-controller: "Users"
+  /socket.io:
+    get:
+      tags:
+      - "socket.io"
+      summary: "connection entry. Usage: socket.on('voteUpdate', (msg: {msg: Campaign}) => void)"
+      operationId: "connectSocketIO"
+      parameters: []
+      responses:
+        "101":
+          description: "Connection Upgrade websocket"
+  /pages/charts:
+    get:
+      tags:
+      - "pages"
+      summary: "HTML page"
+      operationId: "getPage"
+      produces:
+      - "text/html"
+      parameters: []
+      responses:
+        "200":
+          description: "HTML page"
+      x-swagger-router-controller: "Pages"
 definitions:
   Campaign:
     type: "object"
