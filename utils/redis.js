@@ -1,8 +1,8 @@
-const redis = require("redis");
-const { sha1 } = require("../utils/crypt");
+const Redis = require("ioredis");
 
 /**
  * Create a new redis client
+ * @return {IORedis.Redis}
  */
 function newClient() {
     const connectionString = process.env.REDIS_CONN;
@@ -11,11 +11,12 @@ function newClient() {
         throw new Error("Env variable REDIS_CONN not found!");
     }
 
-    return redis.createClient(connectionString);
+    return new Redis(connectionString);
 }
 
 /**
  * Function to return redis client for regular use.
+ * @return {IORedis.Redis}
  */
 const getClient = (() => {
     /** @type redis.RedisClient */
@@ -26,6 +27,7 @@ const getClient = (() => {
 
 /**
  * Function to return redis client for publishing event
+ * @return {IORedis.Redis}
  */
 const getPublisher = (() => {
     /** @type redis.RedisClient */
@@ -38,25 +40,19 @@ const getPublisher = (() => {
  * Return a new user offset number for bitmap.
  */
 exports.getNewUserOffset = async function() {
-    const client = getClient();
-
-    return await new Promise((resolve, reject) => {
-        client.incr("userLastOffset", (err, newOffset) => {
-            err ? reject(err) : resolve(newOffset - 1);
-        });
-    });
+    return (await getClient().incr("userLastOffset")) - 1;
 };
 
 /**
  * Store the user vote of the campaign option.
- * campaignOptionId will be send to "voteUpdated" redis channel once done.
- * @param {string} campaignOptionId ID of the campaign option user votes to
+ * @param {string} campaignId ID of the campaign user vote to
+ * @param {string} optionId ID of the campaign option user votes to
  * @param {number} userOffset the bitmap offset representing the user
  * @param {string[]} optionIdList list of options that user should not voted before
  */
-exports.setVote = async function(campaignOptionId, userOffset, optionIdList) {
-    if (typeof campaignOptionId !== "string") {
-        throw new TypeError("Invalid campaignOptionId"); Infinity;
+exports.setVote = async function(campaignId, optionId, userOffset, optionIdList) {
+    if (typeof optionId !== "string") {
+        throw new TypeError("Invalid campaign option ID"); Infinity;
     }
 
     if (typeof userOffset !== "number" || userOffset < 0 || Math.ceil(userOffset) !== userOffset) {
@@ -66,44 +62,33 @@ exports.setVote = async function(campaignOptionId, userOffset, optionIdList) {
     //script to evalute on redis
     const voteScript = `
 for i=1, #ARGV do
-    if (redis.call('getbit', ARGV[i], KEYS[2]) == 1)
+    if (redis.call('getbit', "{" .. KEYS[1] .. "}" .. ARGV[i], KEYS[3]) == 1)
     then
         return false
     end
 end
-redis.call('setbit', KEYS[1], KEYS[2], 1)
+redis.call('setbit', "{" .. KEYS[1] .. "}" .. KEYS[2], KEYS[3], 1)
 return true
 `;
 
     //for evalute script
     const client = getClient();
 
-    const result = await new Promise((resolve, reject) => {
-        client.eval(voteScript, 2, campaignOptionId, userOffset, ...optionIdList, (err, result) => {
-            err ? reject(err) : resolve(!!result);
-        });
-    });
-
-    return result;
+    return !!(await client.eval(voteScript, 3, campaignId, optionId, userOffset, ...optionIdList));
 };
 
 /**
  * Notify vote change og a campaign
  * @param {string} campaignId
- * @param {string} campaignOptionId
+ * @param {string} optionId
  */
-exports.notifyVoteUpdate = async function(campaignId, campaignOptionId) {
-    const publisher = getPublisher();
-    return await new Promise((resolve, reject) => {
-        publisher.publish("voteUpdate", `${campaignId} ${campaignOptionId}`, (err, reply) => {
-            err ? reject(err) : resolve(reply);
-        });
-    });
+exports.notifyVoteUpdate = async function(campaignId, optionId) {
+    return await getPublisher().publish("voteUpdate", `${campaignId} ${optionId}`);
 }
 
 /**
  * Function to register listener for vote update event (emit by notifyVoteUpdate())
- * @param {Function} listener to register for vote update event. (arg1: campaignId, arg2: campaignOptionId)=>void
+ * @param {Function} listener to register for vote update event. (arg1: campaignId, arg2: optionId)=>void
  * @return {Function} the unregister of the listener
  */
 exports.onVoteUpdate = (() => {
@@ -142,45 +127,33 @@ exports.onVoteUpdate = (() => {
 
 /**
  * Return the total number of votes of the campaign option.
- * @param {string} campaignOptionId ID of the campaign option
+ * @param {string} optionId ID of the campaign option
  * @return {Promise<number>}
  */
-exports.getVoteCount = async function(campaignOptionId) {
-    if (typeof campaignOptionId !== "string") {
-        throw new TypeError("Invalid campaignOptionId"); Infinity;
+exports.getVoteCount = async function(optionId) {
+    if (typeof optionId !== "string") {
+        throw new TypeError("Invalid campaign option ID"); Infinity;
     }
 
-    const client = getClient();
-
-    return await new Promise((resolve, reject) => {
-        client.bitcount(campaignOptionId, (err, voteCount) => {
-            err ? reject(err) : resolve(voteCount);
-        });
-    });
+    return await getClient().bitcount(optionId);
 };
 
 /**
  * True if the user voted to the campaign option.
- * @param {string} campaignOptionId ID of the campaign option
+ * @param {string} optionId ID of the campaign option
  * @param {number} userOffset the bitmap offset representing the user
  * @return {Promise<boolean>}
  */
-exports.isVoted = async function(campaignOptionId, userOffset) {
-    if (typeof campaignOptionId !== "string") {
-        throw new TypeError("Invalid campaignOptionId"); Infinity;
+exports.isVoted = async function(optionId, userOffset) {
+    if (typeof optionId !== "string") {
+        throw new TypeError("Invalid campaign option ID"); Infinity;
     }
 
     if (typeof userOffset !== "number" || userOffset < 0 || Math.ceil(userOffset) !== userOffset) {
         throw new TypeError("Invalid userOffset");
     }
 
-    const client = getClient();
-
-    return await new Promise((resolve, reject) => {
-        client.getbit(campaignOptionId, userOffset, (err, voted) => {
-            err ? reject(err) : resolve(!!voted);
-        });
-    });
+    return await getClient().getbit(optionId, userOffset);
 };
 
 /**
@@ -208,11 +181,5 @@ end
 return false
 `;
 
-    const client = getClient();
-
-    return await new Promise((resolve, reject) => {
-        client.eval(daemonLockScript, 2, daemonId, timeout, (err, result) => {
-            err ? reject(err) : resolve(!!result);
-        });
-    });
+    return !!(await getClient().eval(daemonLockScript, 2, daemonId, timeout));
 };

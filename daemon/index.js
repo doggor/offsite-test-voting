@@ -55,7 +55,7 @@ async function flushDataPeriodically() {
             for (let campaign of campaigns) {
                 let campaignVotes = 0;
                 for (let option of campaign.options) {
-                    let optionVotes = await redis.getVoteCount(option._id.toString());
+                    let optionVotes = await redis.getVoteCount(campaign._id.toString(), option._id.toString());
                     option.votes = optionVotes;
                     campaignVotes += optionVotes;
                 }

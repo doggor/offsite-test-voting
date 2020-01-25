@@ -108,7 +108,7 @@ exports.findCampaign = async function (campaignId, userId) {
             id: option._id,
             name: option.name,
             votes: option.votes,
-            voted: user ? (await redis.isVoted(option._id.toString(), user.offset)) : false,
+            voted: user ? (await redis.isVoted(campaign._id.toString(), option._id.toString(), user.offset)) : false,
         });
     }
     const result = {
@@ -164,7 +164,7 @@ exports.listCampaigns = async function (userId) {
                 id: option._id,
                 name: option.name,
                 votes: option.votes,
-                voted: user ? (await redis.isVoted(option._id.toString(), user.offset)) : false,
+                voted: user ? (await redis.isVoted(campaign._id.toString(), option._id.toString(), user.offset)) : false,
             });
         }
         //compose campaign item
@@ -307,7 +307,7 @@ exports.voteCampaign = async function (campaignId, body) {
     }
 
     //record user vote of the campaign option
-    const success = await redis.setVote(body.optionId, user.offset, campaign.options.map(op => op._id.toString()));
+    const success = await redis.setVote(campaignId, body.optionId, user.offset, campaign.options.map(op => op._id.toString()));
 
     //success === false if already voted
     if (!success) {
