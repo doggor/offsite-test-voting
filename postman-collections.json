@@ -1,0 +1,463 @@
+{
+	"info": {
+		"_postman_id": "fc04ea0d-46a1-48c3-a0cf-d1a01808b7ac",
+		"name": "VotingSystem",
+		"description": "A simple voting system.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Add User",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"hkid\": \"G3294632\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users"
+					]
+				},
+				"description": "Add a new user."
+			},
+			"response": [
+				{
+					"name": "Add User",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"hkid\": \"G3294632\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 27 Jan 2020 15:13:55 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": \"5e2efe332da74a08aa26ec5b\"\n}"
+				}
+			]
+		},
+		{
+			"name": "List Users",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"hkid\": \"A5555550\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users"
+					]
+				},
+				"description": "List users."
+			},
+			"response": [
+				{
+					"name": "List Users",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"hkid\": \"A5555550\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 27 Jan 2020 15:19:26 GMT"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": \"5e2eff6ae9eb5909e15ab43d\"\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Add Campaign",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Who is the best NBA player in the history\",\n    \"start\": \"2020-01-01T00:00:00.000Z\",\n    \"end\": \"2020-01-31T23:59:59.999Z\",\n    \"options\": [\n        {\n            \"name\": \"Michael Jordan\"\n        },\n        {\n            \"name\": \"Kobe Bryant\"\n        },\n        {\n            \"name\": \"Leborn James\"\n        },\n        {\n            \"name\": \"Stephen Curry\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/campaigns",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"campaigns"
+					]
+				},
+				"description": "Add a new campaign."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Campaign",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/campaigns/5e2f0446e9eb5909e15ab443",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"campaigns",
+						"5e2f0446e9eb5909e15ab443"
+					]
+				},
+				"description": "Get a campaign"
+			},
+			"response": []
+		},
+		{
+			"name": "List Campaigns",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/campaigns",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"campaigns"
+					]
+				},
+				"description": "List campaigns."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Campaign",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Which HK CEO candidate you are preferred.\",\n    \"start\": \"2020-01-01T00:00:00.000Z\",\n    \"end\": \"2020-01-31T23:59:59.999Z\",\n    \"options\": [\n        {\n            \"id\": \"5e2effc7e9eb5909e15ab442\",\n            \"name\": \"Michael Jordan\"\n        },\n        {\n            \"id\": \"5e2effc7e9eb5909e15ab441\",\n            \"name\": \"Kobe Bryant\"\n        },\n        {\n            \"id\": \"5e2effc7e9eb5909e15ab440\",\n            \"name\": \"Leborn James\"\n        },\n        {\n            \"id\": \"5e2effc7e9eb5909e15ab43f\",\n            \"name\": \"Stephen Curry\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/campaigns/5e2f0446e9eb5909e15ab443",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"campaigns",
+						"5e2f0446e9eb5909e15ab443"
+					]
+				},
+				"description": "Update specified campaign."
+			},
+			"response": []
+		},
+		{
+			"name": "Vote A Campaign",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"userId\": \"5e2eff6ae9eb5909e15ab43d\",\n\t\"hkid\": \"G3294632\",\n\t\"optionId\": \"5e2f0446e9eb5909e15ab446\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/campaigns/5e2f0446e9eb5909e15ab443/votes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"campaigns",
+						"5e2f0446e9eb5909e15ab443",
+						"votes"
+					]
+				},
+				"description": "Vote a campaign."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Campaign with User vote",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/campaigns/5e2f0446e9eb5909e15ab443?userId=5e2eff6ae9eb5909e15ab43d",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"campaigns",
+						"5e2f0446e9eb5909e15ab443"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "5e2eff6ae9eb5909e15ab43d"
+						}
+					]
+				},
+				"description": "Get a campaign"
+			},
+			"response": []
+		},
+		{
+			"name": "View Charts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/pages/charts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"pages",
+						"charts"
+					]
+				},
+				"description": "View campaign charts."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Campaign",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Which HK CEO candidate you are preferred.\",\n    \"start\": \"2020-01-01T00:00:00.000Z\",\n    \"end\": \"2020-01-31T23:59:59.999Z\",\n    \"options\": [\n        {\n            \"id\": \"5e2efa772da74a08aa26ec59\",\n            \"name\": \"Carrie Lam\"\n        },\n        {\n            \"id\": \"5e2efa772da74a08aa26ec58\",\n            \"name\": \"John Tsang\"\n        },\n        {\n            \"id\": \"5e2efa772da74a08aa26ec57\",\n            \"name\": \"Rebecca I\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/campaigns/5e2effc7e9eb5909e15ab43e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"campaigns",
+						"5e2effc7e9eb5909e15ab43e"
+					]
+				},
+				"description": "Remove a campaign."
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
