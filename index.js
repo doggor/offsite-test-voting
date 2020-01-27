@@ -69,6 +69,8 @@ async function main() {
     // Echo messages for launch success
     console.log("Your server is listening on port %d (http://localhost:%d)", serverPort, serverPort);
     console.log("Swagger-ui is available on http://localhost:%d/docs", serverPort);
+    console.log("Please call any HTTP API with the prefix: http://localhost:%d/api/v1", serverPort);
+    console.log("You may found the vote distributions of all campaigns at http://localhost:%d/api/v1/pages/charts through a modern web browser");
 }
 
 main().catch(err => {
