@@ -299,7 +299,7 @@ describe("vote campaign", () => {
     });
 
     it("should successfully vote a campaign by a valid user at first time only", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         await CampaignService.voteCampaign("id_campaign_2", {
             userId: "id_user_1",
@@ -307,11 +307,13 @@ describe("vote campaign", () => {
             optionId: "id_campaign_2_option_2",
         });
 
-        expect(redis.setVote).toHaveBeenCalledWith("id_campaign_2_option_2", 0, [
+        expect(redis.setVote).toHaveBeenCalledWith("id_campaign_2", "id_campaign_2_option_2", 0, [
             "id_campaign_2_option_1",
             "id_campaign_2_option_2",
             "id_campaign_2_option_3",
         ]);
+
+        expect(Campaign.updateOne).toHaveBeenCalled();
 
         try {
             await CampaignService.voteCampaign("id_campaign_2", {

@@ -22,7 +22,53 @@ const getClient = (() => {
     /** @type redis.RedisClient */
     let client;
 
-    return () => client || (client = newClient());
+    return () => {
+        if (!client) {
+            client = newClient();
+
+            //script to set the bit of the user vote on the bitmap of the campaign option.
+            //given that he/she has no any other votes on the other options of the same campaign.
+            //return true if the vote is successfully set.
+            //KEYS[1]: campaign ID
+            //KEYS[2]: option ID the user vote to
+            //KEYS[3]: the bitmap offset of the user
+            //ARGS: list of option IDs to check if there are any votes from the user
+            client.defineCommand("setVote", {
+                numberOfKeys: 3,
+                lua: `
+for i=1, #ARGV do
+    if (redis.call('getbit', "{" .. KEYS[1] .. "}" .. ARGV[i], KEYS[3]) == 1)
+    then
+        return false
+    end
+end
+redis.call('setbit', "{" .. KEYS[1] .. "}" .. KEYS[2], KEYS[3], 1)
+return true
+`,
+            });
+
+            //script to acquire the global deamon lock.
+            //If the caller process acquires the lock, it can uniquely perform system-wide tasks.
+            //The lock will be released automatically when timeout.
+            //Caller process should keep updating the lock to prevent timeout.
+            //return true if the lock is successfully acquired.
+            //KEYS[1]: the deamon ID
+            //KEYS[2]: timeout of the lock in seconds
+            client.defineCommand("getDeamonLock", {
+                numberOfKeys: 2,
+                lua: `
+local lock = redis.call('get', 'daemonLock')
+if (not(lock) or lock == KEYS[1])
+then
+    redis.call('set', 'daemonLock', KEYS[1], 'EX', KEYS[2])
+    return true
+end
+return false`,
+            });
+        }
+
+        return client;
+    };
 })();
 
 /**
@@ -59,22 +105,7 @@ exports.setVote = async function(campaignId, optionId, userOffset, optionIdList)
         throw new TypeError("Invalid userOffset");
     }
 
-    //script to evalute on redis
-    const voteScript = `
-for i=1, #ARGV do
-    if (redis.call('getbit', "{" .. KEYS[1] .. "}" .. ARGV[i], KEYS[3]) == 1)
-    then
-        return false
-    end
-end
-redis.call('setbit', "{" .. KEYS[1] .. "}" .. KEYS[2], KEYS[3], 1)
-return true
-`;
-
-    //for evalute script
-    const client = getClient();
-
-    return !!(await client.eval(voteScript, 3, campaignId, optionId, userOffset, ...optionIdList));
+    return !!(await getClient().setVote(campaignId, optionId, userOffset, ...optionIdList));
 };
 
 /**
@@ -171,15 +202,5 @@ exports.getDaemonLock = async function(daemonId, timeout) {
     //script to evalute on redis
     //lock == nil:     no body hold the lock, set it to be daemonId
     //lock == KEYS[1]: this daemon already hold the lock, extends the timeout
-    const daemonLockScript = `
-local lock = redis.call('get', 'daemonLock')
-if (not(lock) or lock == KEYS[1])
-then
-    redis.call('set', 'daemonLock', KEYS[1], 'EX', KEYS[2])
-    return true
-end
-return false
-`;
-
-    return !!(await getClient().eval(daemonLockScript, 2, daemonId, timeout));
+    return !!(await getClient().getDeamonLock(daemonId, timeout));
 };
