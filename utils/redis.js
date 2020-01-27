@@ -158,24 +158,26 @@ exports.onVoteUpdate = (() => {
 
 /**
  * Return the total number of votes of the campaign option.
+ * @param {string} campaignId ID of the campaign user vote to
  * @param {string} optionId ID of the campaign option
  * @return {Promise<number>}
  */
-exports.getVoteCount = async function(optionId) {
+exports.getVoteCount = async function(campaignId, optionId) {
     if (typeof optionId !== "string") {
         throw new TypeError("Invalid campaign option ID"); Infinity;
     }
 
-    return await getClient().bitcount(optionId);
+    return await getClient().bitcount(`{${campaignId}}${optionId}`);
 };
 
 /**
  * True if the user voted to the campaign option.
+ * @param {string} campaignId ID of the campaign user vote to
  * @param {string} optionId ID of the campaign option
  * @param {number} userOffset the bitmap offset representing the user
  * @return {Promise<boolean>}
  */
-exports.isVoted = async function(optionId, userOffset) {
+exports.isVoted = async function(campaignId, optionId, userOffset) {
     if (typeof optionId !== "string") {
         throw new TypeError("Invalid campaign option ID"); Infinity;
     }
@@ -184,7 +186,7 @@ exports.isVoted = async function(optionId, userOffset) {
         throw new TypeError("Invalid userOffset");
     }
 
-    return await getClient().getbit(optionId, userOffset);
+    return !!(await getClient().getbit(`{${campaignId}}${optionId}`, userOffset));
 };
 
 /**
