@@ -118,7 +118,9 @@ module.exports = {
             exec() { return Promise.resolve(data); },
         }),
     updateOne: jest.fn()
-        .mockResolvedValue(data[0]),
+        .mockReturnValue({
+            exec: jest.fn().mockResolvedValue(data[0]),
+        }),
     _mockData: data,
     _resetMockData() {
         data = clonedeep(documents);
