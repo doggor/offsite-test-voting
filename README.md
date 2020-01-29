@@ -5,9 +5,9 @@
 2. Docker v19+
 
 ## Setup
-1. Create a `.env` file at root and copy the content from `.env.test`:
+1. Create a `.env` file at root and copy the content from `.env.example`:
    ```sh
-    cp .env.test .env
+    cp .env.example .env
    ```
 2. By default, port 27017 and 6379 will be used for our MongoDB and Redis instance, respectively. If these ports are already in use, please change the port number in your `.env` file and it should be align with `docker-compose.yml` file.
 3. Launch MongoDB and Redis via docker compose:
