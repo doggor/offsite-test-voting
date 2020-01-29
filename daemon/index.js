@@ -17,16 +17,18 @@ let lock = false;
 async function main(io) {
     boardcastVoteUpdates(io);
 
-    //continuously try setting the lock
-    //and start tasks once it got.
+    //keep getting/updating the global daemon lock
     for (; ;) {
-        //try set the daemon lock, 30s timeout
+        //try get the daemon lock, 30s timeout
         const newlock = await redis.getDaemonLock(DAEMON_ID, 30);
 
-        //start flushVotes() if just got the lock
+        //start flushDataPeriodically() if just got the lock
         if (lock === false && newlock === true) {
             lock = true;
             flushDataPeriodically();
+        }
+        else if (newlock === false) {
+            lock = false; //that will stop flushDataPeriodically()
         }
 
         //wait 15s before next try/update
@@ -41,7 +43,7 @@ async function main(io) {
 async function flushDataPeriodically() {
     //flush the data peridically
     for (; ;) {
-        //return when it no longer holds the lock
+        //return when the lock no longer on hand
         if (!lock) {
             return;
         }
