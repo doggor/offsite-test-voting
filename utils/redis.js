@@ -98,7 +98,7 @@ exports.getNewUserOffset = async function() {
  */
 exports.setVote = async function(campaignId, optionId, userOffset, optionIdList) {
     if (typeof optionId !== "string") {
-        throw new TypeError("Invalid campaign option ID"); Infinity;
+        throw new TypeError("Invalid campaign option ID");
     }
 
     if (typeof userOffset !== "number" || userOffset < 0 || Math.ceil(userOffset) !== userOffset) {
