@@ -335,7 +335,7 @@ exports.voteCampaign = async function (campaignId, body) {
                 }
             }).exec();
 
-            //notify deamons for boardcasting this message to clients
+            //notify deamons for broadcasting this message to clients
             await redis.notifyVoteUpdate(campaignId, body.optionId);
         }
         catch (err) {

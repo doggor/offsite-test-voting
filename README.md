@@ -1,4 +1,4 @@
-# SImple Voting
+# Simple Voting
 
 ## Pre-requirements
 1. NodeJS v12+

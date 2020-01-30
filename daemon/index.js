@@ -15,7 +15,7 @@ let lock = false;
  * @param {SocketIO.Server} io
  */
 async function main(io) {
-    boardcastVoteUpdates(io);
+    broadcastVoteUpdates(io);
 
     //keep getting/updating the global daemon lock
     for (; ;) {
@@ -76,14 +76,14 @@ async function flushDataPeriodically() {
 }
 
 /**
- * Register listner for boardcasting the latest campaign data
+ * Register listner for broadcasting the latest campaign data
  * each time when a vote update event emit.
  * @param {SocketIO.Server} io
  * @return {Function} unregister
  */
-function boardcastVoteUpdates(io) {
+function broadcastVoteUpdates(io) {
     return redis.onVoteUpdate(async (campaignId, optionId) => {
-        //boardcast latest campaign data
+        //broadcast latest campaign data
         const campaign = await Campaign.findOne({
             _id: campaignId,
             deletedAt: { $exists: false },
