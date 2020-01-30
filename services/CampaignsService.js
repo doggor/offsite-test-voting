@@ -103,7 +103,7 @@ exports.findCampaign = async function (campaignId, userId) {
     //prepare result
     const options = [];
     for (let option of campaign.options) {
-        //fillup 'votes' and 'voted' fields for each option
+        //fill up 'votes' and 'voted' fields for each option
         options.push({
             id: option._id,
             name: option.name,
@@ -157,7 +157,7 @@ exports.listCampaigns = async function (userId) {
     //prepare result
     let result = [];
     for (let campaign of campaigns) {
-        //fillup 'votes' and 'voted' fields for each option
+        //fill up 'votes' and 'voted' fields for each option
         const options = [];
         for (let option of campaign.options) {
             options.push({
@@ -239,7 +239,7 @@ exports.updateCampaign = async function (campaignId, body) {
 
     //prepare result
     const options = []; for (let option of campaign.options) {
-        //fillup 'votes' field for each option
+        //fill up 'votes' field for each option
         options.push({
             id: option._id,
             name: option.name,
@@ -335,7 +335,7 @@ exports.voteCampaign = async function (campaignId, body) {
                 }
             }).exec();
 
-            //notify deamons for broadcasting this message to clients
+            //notify daemons for broadcasting this message to clients
             await redis.notifyVoteUpdate(campaignId, body.optionId);
         }
         catch (err) {

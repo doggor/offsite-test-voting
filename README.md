@@ -22,7 +22,7 @@
    ```sh
    npm start
    ```
-   By default, port 8080 will be used by the NodeJS server. If this port is already in use, please pass a new port number through the `PORT` envirnment variable when launching, for example:
+   By default, port 8080 will be used by the NodeJS server. If this port is already in use, please pass a new port number through the `PORT` environment variable when launching, for example:
    ```sh
     PORT=8888 npm start
    ```
@@ -43,10 +43,10 @@ http://localhost:8080/docs
 There is a `postman-collection.json` file (v2.1) at the project root which contains examples of how to interact with the HTTP API. You may import it into your postman application. Notice that you should change the IDs recorded in the collection to the actual values found in your runtime, or else almost of the requests will be failure.
 
 ## The Campaign charts
-You may found all the campaign charts by visiting `http://localhost:8080/pages/charts`, which also establish a websocket connection to the deamon of the program for receiving last campaign vote counts.
+You may found all the campaign charts by visiting `http://localhost:8080/pages/charts`, which also establish a websocket connection to the daemon of the program for receiving last campaign vote counts.
 
 ## How the Voting works
-The NodeJS program will launch a web server and a deamon. The web server provides HTTP interface to access campaigns and users data stored in MongoDB. User votes will be stored as bitmaps in Redis for fast write (AOF enabled).
+The NodeJS program will launch a web server and a daemon. The web server provides HTTP interface to access campaigns and users data stored in MongoDB. User votes will be stored as bitmaps in Redis for fast write (AOF enabled).
 
 Each time after writing user vote into the bitmap in Redis, it will asynchronously updates the vote counts of the campaign in MongoDB, which also update the index for fast read.
 
@@ -56,11 +56,11 @@ Here is how a voting request being processed internally:
 
 ![Voting flow image](docs/voting-flow.svg)
 
-To ensure that the vote counts in MongoDB are eventually consistent with the bitmaps in Redis, even encounter program crashs, the daemon also periodically updates the vote counts from Redis to MongoDB.
+To ensure that the vote counts in MongoDB are eventually consistent with the bitmaps in Redis, even encounter program crashes, the daemon also periodically updates the vote counts from Redis to MongoDB.
 
 Since the program is designed to be horizontally scalable, there is a `daemon lock` implemented in Redis so that only one daemon can performs the above updates.
 
 ## High Traffic and Scalable Architecture Design
 While the NodeJS program is ease for scale, it would be better to have Cluster + Replica structure for both the Redis and MongoDB:
 
-![Architectture image](docs/voting-arch.svg)
+![Architecture image](docs/voting-arch.svg)

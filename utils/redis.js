@@ -47,14 +47,14 @@ return true
 `,
             });
 
-            //script to acquire the global deamon lock.
+            //script to acquire the global daemon lock.
             //If the caller process acquires the lock, it can uniquely perform system-wide tasks.
             //The lock will be released automatically when timeout.
             //Caller process should keep updating the lock to prevent timeout.
             //return true if the lock is successfully acquired.
-            //KEYS[1]: the deamon ID
+            //KEYS[1]: the daemon ID
             //KEYS[2]: timeout of the lock in seconds
-            client.defineCommand("getDeamonLock", {
+            client.defineCommand("getDaemonLock", {
                 numberOfKeys: 2,
                 lua: `
 local lock = redis.call('get', 'daemonLock')
@@ -201,8 +201,8 @@ exports.getDaemonLock = async function(daemonId, timeout) {
         throw new TypeError("Invalid timeout");
     }
 
-    //script to evalute on redis
+    //script to evaluate on redis
     //lock == nil:     no body hold the lock, set it to be daemonId
     //lock == KEYS[1]: this daemon already hold the lock, extends the timeout
-    return !!(await getClient().getDeamonLock(daemonId, timeout));
+    return !!(await getClient().getDaemonLock(daemonId, timeout));
 };

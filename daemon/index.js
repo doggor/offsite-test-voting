@@ -20,14 +20,14 @@ async function main(io) {
     //keep getting/updating the global daemon lock
     for (; ;) {
         //try get the daemon lock, 30s timeout
-        const newlock = await redis.getDaemonLock(DAEMON_ID, 30);
+        const newLock = await redis.getDaemonLock(DAEMON_ID, 30);
 
         //start flushDataPeriodically() if just got the lock
-        if (lock === false && newlock === true) {
+        if (lock === false && newLock === true) {
             lock = true;
             flushDataPeriodically();
         }
-        else if (newlock === false) {
+        else if (newLock === false) {
             lock = false; //that will stop flushDataPeriodically()
         }
 
@@ -41,7 +41,7 @@ async function main(io) {
  * to ensure that the data in mongodb is consistent with redis.
  */
 async function flushDataPeriodically() {
-    //flush the data peridically
+    //flush the data periodically
     for (; ;) {
         //return when the lock no longer on hand
         if (!lock) {
@@ -76,7 +76,7 @@ async function flushDataPeriodically() {
 }
 
 /**
- * Register listner for broadcasting the latest campaign data
+ * Register listener for broadcasting the latest campaign data
  * each time when a vote update event emit.
  * @param {SocketIO.Server} io
  * @return {Function} unregister
