@@ -337,6 +337,8 @@ definitions:
       id: "id"
   UserCreationRequest:
     type: "object"
+    required:
+    - "hkid"
     properties:
       hkid:
         type: "string"
