@@ -12,7 +12,7 @@ const { sha256 } = require("../utils/crypt");
  * body Campaign Campaign to add
  * returns Campaign
  **/
-exports.addCampaign = async function (body) {
+exports.addCampaign = async function(body) {
     const campaign = await Campaign.create({
         name: body.name,
         start: new Date(body.start),
@@ -48,7 +48,7 @@ exports.addCampaign = async function (body) {
  * campaignId Long ID of campaign
  * no response value expected for this operation
  **/
-exports.deleteCampaign = async function (campaignId) {
+exports.deleteCampaign = async function(campaignId) {
     const campaign = await Campaign.findOne({
         _id: campaignId,
         deletedAt: {
@@ -73,7 +73,7 @@ exports.deleteCampaign = async function (campaignId) {
  * userId String Voter"s user ID (optional)
  * returns CampaignWithVoted
  **/
-exports.findCampaign = async function (campaignId, userId) {
+exports.findCampaign = async function(campaignId, userId) {
     const campaign = await Campaign.findOne({
         _id: campaignId,
         deletedAt: {
@@ -130,7 +130,7 @@ exports.findCampaign = async function (campaignId, userId) {
  * userId String Voter"s user ID (optional)
  * returns List
  **/
-exports.listCampaigns = async function (userId) {
+exports.listCampaigns = async function(userId) {
     const campaigns = await Campaign.find({
         deletedAt: {
             $exists: false
@@ -189,7 +189,7 @@ exports.listCampaigns = async function (userId) {
  * body Campaign
  * returns Campaign
  **/
-exports.updateCampaign = async function (campaignId, body) {
+exports.updateCampaign = async function(campaignId, body) {
     const campaign = await Campaign.findOne({
         _id: campaignId,
         deletedAt: {
@@ -215,24 +215,36 @@ exports.updateCampaign = async function (campaignId, body) {
     campaign.start = start;
     campaign.end = end;
 
-    IN_OPTIONS:
-    for (let newOption of body.options) {
-        if (newOption.id) {
-            for (let option of campaign.options) {
-                if (option._id.toString() === newOption.id) {
-                    option.name = newOption.name;
-                    continue IN_OPTIONS;
-                }
-            }
-            throw new InvalidDataError(`Option (ID: ${newOption.id}) Not Found`);
+    //extract options that has ID attached
+    const idAttachedOptionMap = new Map(body.options.filter(option => !!option.id).map(option => ([option.id, option.name])));
+
+    //update name for each existed options
+    const existedOptions = campaign.options.map(option => {
+        const optionId = option._id.toString();
+        if (idAttachedOptionMap.has(optionId)) {
+            option.name = idAttachedOptionMap.get(optionId);
         }
-        else {
-            campaign.options.push({
-                name: newOption.name,
-                votes: 0,
-            });
+        return option;
+    });
+
+    //extract the ID of given options
+    const existedOptionIds = existedOptions.map(option => option._id.toString());
+
+    //check if there is any ID from the given options that is not existed in DB
+    for (let id of idAttachedOptionMap.keys()) {
+        if (existedOptionIds.indexOf(id) === -1) {
+            throw new InvalidDataError(`Option (ID: ${id}) Not Found`);
         }
     }
+
+    //compose new option list with name-updated options and new (no ID attached) options
+    campaign.options = [
+        ...existedOptions,
+        ...body.options.filter(option => !option.id).map(({ name }) => ({
+            name,
+            votes: 0,
+        }))
+    ];
 
     //save record
     await campaign.save();
@@ -266,7 +278,7 @@ exports.updateCampaign = async function (campaignId, body) {
  * body VoteCreationRequest
  * no response value expected for this operation
  **/
-exports.voteCampaign = async function (campaignId, body) {
+exports.voteCampaign = async function(campaignId, body) {
     //find campaign that has given option
     const campaign = await Campaign.findOne({
         _id: campaignId,
@@ -315,7 +327,7 @@ exports.voteCampaign = async function (campaignId, body) {
     }
 
     //increase vote count in mongodb and notify this update
-    (async function () {
+    (async function() {
         try {
             //increase vote count
             await Campaign.updateOne({
